@@ -1,4 +1,9 @@
 #![no_std]
+
+#[cfg(test)]
+#[macro_use]
+extern crate hex_literal;
+
 #[macro_use]
 pub mod registers;
 pub mod bus;
@@ -29,6 +34,10 @@ pub struct BMP280<BUS> {
 impl<E, BUS: Bus<Error = E>> BMP280<BUS> {
     pub fn new(bus: BUS) -> Self {
         BMP280 { bus }
+    }
+
+    pub fn free(self) -> BUS {
+        self.bus
     }
 
     pub fn verify(&mut self) -> Result<bool, E> {

@@ -123,13 +123,13 @@ mod test {
     fn compensate() {
         use super::{Calibration, RawPressure, RawTemperature};
 
-        let calibration_bytes = [
-            0x99, 0x6b, 0x29, 0x65, 0x32, 0x0, 0xaf, 0x92, 0x7e, 0xd6, 0xd0, 0xb, 0xc6, 0x22, 0xe2,
-            0xfe, 0xf9, 0xff, 0x8c, 0x3c, 0xf8, 0xc6, 0x70, 0x17,
-        ];
+        let calibration_bytes = hex!(
+            "99 6B 29 65 32 00 AF 92 7E D6 D0 0B
+             C6 22 E2 FE F9 FF 8C 3C F8 C6 70 17"
+        );
         let calibration = Calibration::from_bytes(&calibration_bytes);
-        let raw_pressure = RawPressure::from_bytes(&[0x4e, 0x54, 0x80]);
-        let raw_temperature = RawTemperature::from_bytes(&[0x8a, 0xbc, 0x40]);
+        let raw_pressure = RawPressure::from_bytes(&hex!("4E 54 80"));
+        let raw_temperature = RawTemperature::from_bytes(&hex!("8A BC 40"));
         let t_fine = raw_temperature.t_fine(&calibration);
         let temperature = t_fine.degree_celsuis_x100() / 100;
         assert_eq!(39, temperature);
