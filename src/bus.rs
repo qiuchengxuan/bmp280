@@ -1,5 +1,6 @@
 use core::convert::Infallible;
 
+use embedded_hal::blocking::delay::DelayUs;
 use embedded_hal::blocking::spi;
 use embedded_hal::digital::v2::OutputPin;
 
@@ -17,10 +18,6 @@ pub enum SpiError<WE, TE, OE> {
     WriteError(WE),
     TransferError(TE),
     OutputPinError(OE),
-}
-
-pub trait DelayNs<T> {
-    fn delay_ns(&mut self, ns: T);
 }
 
 pub struct DummyOutputPin {}
@@ -46,7 +43,7 @@ impl<SPI, CS, D> SpiBus<SPI, CS, D>
 where
     SPI: spi::Transfer<u8> + spi::Write<u8>,
     CS: OutputPin,
-    D: DelayNs<u16>,
+    D: DelayUs<u8>,
 {
     pub fn new(spi: SPI, cs: CS, delay: D) -> Self {
         Self { spi, cs, delay }
@@ -72,7 +69,7 @@ impl<WE, TE, OE, SPI, CS, D> Bus for SpiBus<SPI, CS, D>
 where
     SPI: spi::Transfer<u8, Error = TE> + spi::Write<u8, Error = WE>,
     CS: OutputPin<Error = OE>,
-    D: DelayNs<u16>,
+    D: DelayUs<u8>,
 {
     type Error = SpiError<WE, TE, OE>;
 
@@ -80,7 +77,7 @@ where
         self.chip_select(true)?;
         let result = self.spi.write(&[reg as u8 & 0x7F, value]);
         self.chip_select(false)?;
-        self.delay.delay_ns(1000);
+        self.delay.delay_us(1);
         result.map_err(|e| SpiError::WriteError(e))
     }
 

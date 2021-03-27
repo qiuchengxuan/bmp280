@@ -10,16 +10,14 @@ pub mod bus;
 pub mod measurement;
 
 use embedded_hal::blocking::delay::DelayMs;
-use embedded_hal::spi::{self, Phase, Polarity};
+use embedded_hal::spi::{Mode as SpiMode, MODE_0, MODE_3};
 
 use bus::Bus;
 use measurement::{Calibration, RawPressure, RawTemperature};
 use registers::{PressureOversampling, Register, StandbyTime, TemperatureOversampling, ID, RESET};
 
-pub const DEFAULT_SPI_MODE: spi::Mode =
-    spi::Mode { polarity: Polarity::IdleHigh, phase: Phase::CaptureOnSecondTransition };
-pub const ALTERNATE_SPI_MODE: spi::Mode =
-    spi::Mode { polarity: Polarity::IdleLow, phase: Phase::CaptureOnFirstTransition };
+pub const DEFAULT_SPI_MODE: SpiMode = MODE_3;
+pub const ALTERNATE_SPI_MODE: SpiMode = MODE_0;
 
 pub enum Mode {
     Sleep = 0b00,
