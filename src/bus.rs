@@ -106,31 +106,28 @@ pub enum I2cError<WE, RE> {
     ReadError(RE),
 }
 
-pub struct I2cBus<I2C, D> {
+pub struct I2cBus<I2C> {
     i2c: I2C,
-    delay: D,
 }
 
-impl<I2C, D> I2cBus<I2C, D> {
-    pub fn new(i2c: I2C, delay: D) -> Self {
-        Self { i2c, delay }
+impl<I2C> I2cBus<I2C> {
+    pub fn new(i2c: I2C) -> Self {
+        Self { i2c }
     }
 
-    pub fn free(self) -> (I2C, D) {
-        (self.i2c, self.delay)
+    pub fn free(self) -> I2C {
+        return self.i2c;
     }
 }
 
-impl<I2C, D, WE, RE> Bus for I2cBus<I2C, D>
+impl<I2C, WE, RE> Bus for I2cBus<I2C>
 where
     I2C: i2c::Read<Error = RE> + i2c::Write<Error = WE>,
-    D: DelayUs<u8>,
 {
     type Error = I2cError<WE, RE>;
 
     fn write(&mut self, reg: Register, value: u8) -> Result<(), Self::Error> {
         let result = self.i2c.write(reg as u8, &[value]);
-        self.delay.delay_us(1);
         result.map_err(|e| I2cError::WriteError(e))
     }
 
