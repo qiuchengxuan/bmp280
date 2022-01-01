@@ -108,12 +108,18 @@ pub enum I2cError<WE, RE> {
 
 pub struct I2cBus<I2C> {
     i2c: I2C,
-    addr: u8,
+    addr: I2cAddress,
+}
+
+#[derive(Copy, Clone)]
+pub enum I2cAddress {
+    SdoToGnd = 0x76,
+    SdoToInterfaceSupplyVoltage = 0x77,
 }
 
 impl<I2C> I2cBus<I2C> {
-    pub fn new(i2c: I2C) -> Self {
-        Self { i2c, addr: 0x76 }
+    pub fn new(i2c: I2C, addr: I2cAddress) -> Self {
+        Self { i2c, addr }
     }
 
     pub fn free(self) -> I2C {
@@ -128,20 +134,20 @@ where
     type Error = I2cError<WE, RE>;
 
     fn write(&mut self, reg: Register, value: u8) -> Result<(), Self::Error> {
-        let result = self.i2c.write(self.addr, &[reg as u8, value]);
+        let result = self.i2c.write(self.addr as u8, &[reg as u8, value]);
         result.map_err(|e| I2cError::WriteError(e))
     }
 
     fn read(&mut self, reg: Register) -> Result<u8, Self::Error> {
         let mut value = [0u8];
         self.i2c
-            .write_read(self.addr, &[reg as u8], &mut value)
+            .write_read(self.addr as u8, &[reg as u8], &mut value)
             .map_err(|e| I2cError::ReadError(e))?;
         Ok(value[0])
     }
 
     fn reads(&mut self, reg: Register, output: &mut [u8]) -> Result<(), Self::Error> {
-        self.i2c.write_read(self.addr, &[reg as u8], output).map_err(|e| I2cError::ReadError(e))?;
+        self.i2c.write_read(self.addr as u8, &[reg as u8], output).map_err(|e| I2cError::ReadError(e))?;
         Ok(())
     }
 }
