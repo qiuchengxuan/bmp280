@@ -1,6 +1,7 @@
 use core::convert::Infallible;
 
 use embedded_hal::blocking::delay::DelayUs;
+use embedded_hal::blocking::i2c;
 use embedded_hal::blocking::spi;
 use embedded_hal::digital::v2::OutputPin;
 
@@ -95,6 +96,52 @@ where
         self.spi.write(&[reg as u8 | 0x80]).map_err(|e| SpiError::WriteError(e))?;
         self.spi.transfer(output).map_err(|e| SpiError::TransferError(e))?;
         self.chip_select(false)?;
+        Ok(())
+    }
+}
+
+#[derive(Debug)]
+pub enum I2cError<WE, RE> {
+    WriteError(WE),
+    ReadError(RE),
+}
+
+pub struct I2cBus<I2C, D> {
+    i2c: I2C,
+    delay: D,
+}
+
+impl<I2C, D> I2cBus<I2C, D> {
+    pub fn new(i2c: I2C, delay: D) -> Self {
+        Self { i2c, delay }
+    }
+
+    pub fn free(self) -> (I2C, D) {
+        (self.i2c, self.delay)
+    }
+}
+
+impl<I2C, D, WE, RE> Bus for I2cBus<I2C, D>
+where
+    I2C: i2c::Read<Error = RE> + i2c::Write<Error = WE>,
+    D: DelayUs<u8>,
+{
+    type Error = I2cError<WE, RE>;
+
+    fn write(&mut self, reg: Register, value: u8) -> Result<(), Self::Error> {
+        let result = self.i2c.write(reg as u8, &[value]);
+        self.delay.delay_us(1);
+        result.map_err(|e| I2cError::WriteError(e))
+    }
+
+    fn read(&mut self, reg: Register) -> Result<u8, Self::Error> {
+        let mut value = [0u8];
+        self.i2c.read(reg as u8, &mut value).map_err(|e| I2cError::ReadError(e))?;
+        Ok(value[0])
+    }
+
+    fn reads(&mut self, reg: Register, output: &mut [u8]) -> Result<(), Self::Error> {
+        self.i2c.read(reg as u8, output).map_err(|e| I2cError::ReadError(e))?;
         Ok(())
     }
 }
