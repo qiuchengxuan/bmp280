@@ -57,12 +57,12 @@ pub struct RawTemperature(i32);
 
 impl RawTemperature {
     pub fn from_bytes(bytes: &[u8]) -> Self {
-        Self((bytes[0] as i32) << 12 | (bytes[1] as i32) << 4 | (bytes[2] as i32))
+        Self((bytes[0] as i32) << 12 | (bytes[1] as i32) << 4 | (bytes[2] as i32) >> 4)
     }
 
     pub fn t_fine(self, calib: &Calibration) -> TemperatureFine {
-        let var1 = (((self.0 >> 3) - (calib.dig_t(1) << 1)) * (calib.dig_t(2))) >> 11;
-        let var2 = ((pow2!((self.0 >> 4) - calib.dig_t(1)) >> 12) * (calib.dig_t(3))) >> 14;
+        let var1 = (((self.0 >> 3) - (calib.dig_t(1) << 1)) * calib.dig_t(2)) >> 11;
+        let var2 = ((pow2!((self.0 >> 4) - calib.dig_t(1)) >> 12) * calib.dig_t(3)) >> 14;
         TemperatureFine(var1 + var2)
     }
 }
@@ -72,7 +72,7 @@ pub struct RawPressure(i32);
 
 impl RawPressure {
     pub fn from_bytes(bytes: &[u8]) -> Self {
-        Self((bytes[0] as i32) << 12 | (bytes[1] as i32) << 4 | (bytes[2] as i32))
+        Self((bytes[0] as i32) << 12 | (bytes[1] as i32) << 4 | (bytes[2] as i32) >> 4)
     }
 
     // output in pa
@@ -134,8 +134,8 @@ mod test {
         let temperature = t_fine.degree_celsuis_x100() / 100;
         assert_eq!(39, temperature);
         let pressure = raw_pressure.i64_compensated(t_fine, &calibration);
-        assert_eq!(99772, pressure / 256);
+        assert_eq!(99792, pressure / 256);
         let pressure = raw_pressure.compensated(t_fine, &calibration);
-        assert_eq!(99772, pressure);
+        assert_eq!(99795, pressure);
     }
 }
