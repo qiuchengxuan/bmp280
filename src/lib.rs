@@ -9,12 +9,11 @@ pub mod registers;
 pub mod bus;
 pub mod measurement;
 
-use embedded_hal::blocking::delay::DelayMs;
-use embedded_hal::spi::{Mode as SpiMode, MODE_0, MODE_3};
+use embedded_hal::spi::{MODE_0, MODE_3, Mode as SpiMode};
 
 use bus::Bus;
 use measurement::{Calibration, RawPressure, RawTemperature};
-use registers::{PressureOversampling, Register, StandbyTime, TemperatureOversampling, ID, RESET};
+use registers::{ID, PressureOversampling, RESET, Register, StandbyTime, TemperatureOversampling};
 
 pub const DEFAULT_SPI_MODE: SpiMode = MODE_3;
 pub const ALTERNATE_SPI_MODE: SpiMode = MODE_0;
@@ -51,7 +50,7 @@ impl<E, BUS: Bus<Error = E>> BMP280<BUS> {
         self.bus.write(reg, value)
     }
 
-    pub fn reset<D: DelayMs<u8>>(&mut self, delay: &mut D) -> Result<(), E> {
+    pub fn reset<D: embedded_hal::delay::DelayNs>(&mut self, delay: &mut D) -> Result<(), E> {
         self.bus.write(Register::Reset, RESET)?;
         delay.delay_ms(2u8.into());
         Ok(())

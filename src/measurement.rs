@@ -19,20 +19,12 @@ impl Calibration {
 
     #[inline]
     fn dig_t(self, index: usize) -> i32 {
-        if index == 1 {
-            self.dig_t[0] as i32
-        } else {
-            self.dig_t[index - 1] as i16 as i32
-        }
+        if index == 1 { self.dig_t[0] as i32 } else { self.dig_t[index - 1] as i16 as i32 }
     }
 
     #[inline]
     fn dig_p(self, index: usize) -> i32 {
-        if index == 1 {
-            self.dig_p[0] as i32
-        } else {
-            self.dig_p[index - 1] as i16 as i32
-        }
+        if index == 1 { self.dig_p[0] as i32 } else { self.dig_p[index - 1] as i16 as i32 }
     }
 }
 

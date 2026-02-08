@@ -1,8 +1,8 @@
 [package]
 name = "bmp280-core"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["qiuchengxuan <qiuchengxuan@gmail.com>"]
-edition = "2018"
+edition = "2024"
 
 description = "Driver for BMP280"
 repository = "https://github.com/qiuchengxuan/bmp280"
@@ -13,7 +13,7 @@ license = "Apache-2.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-embedded-hal = "0.2.3"
+embedded-hal = "1.0"
 
 [dev-dependencies]
-hex-literal = "0.3"
+hex-literal = "1.1"
